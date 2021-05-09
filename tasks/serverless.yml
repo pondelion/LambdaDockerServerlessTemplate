@@ -1,0 +1,79 @@
+service: lambda-docker-template1
+
+plugins:
+  - serverless-offline
+  - serverless-step-functions
+
+provider:
+  name: aws
+  profile: default
+  stage: dev
+  region: ap-northeast-1
+  memorySize: 2048
+  iam:
+    role:
+      statements:
+        - Effect: 'Allow'
+          Action:
+            - 's3:GetObject'
+            - 's3:PutObject'
+            - 's3:ListBucket'
+          Resource:
+            - "*"
+        - Effect: 'Allow'
+          Action:
+            - 'dynamodb:GetItem'
+            - 'dynamodb:PutItem'
+            - 'dynamodb:UpdateItem'
+          Resource:
+            - "*"
+        - Effect: Allow
+          Action: 
+            - 'ecr:*'
+            - 'ecr-public:*'
+            - 'sts:GetServiceBearerToken'
+          Resource:
+            - "*"
+  environment:
+    TZ: Asia/Tokyo
+
+functions:
+  handler1:
+    image:
+      uri:
+        - ${env:IMAGE_URL}
+      command:
+        - handler.handler
+    timeout: 900
+    environment:
+      ENV1: ${env:ENV1}
+  handler2:
+    image:
+      uri:
+        - ${env:IMAGE_URL}
+      command:
+        - handler2.handler
+    timeout: 900
+    environment:
+      ENV2: ${env:ENV2}
+
+stepFunctions:
+  stateMachines:
+    funcSteps:
+      name: lambda-docker-template1-step
+      events:
+        - schedule:
+            rate: cron(0 * * * ? *)
+      definition:
+        StartAt: handler1
+        States:
+          handler1:
+            Type: Task
+            Resource:
+              Fn::GetAtt: [handler1, Arn]
+            Next: handler2
+          handler2:
+            Type: Task
+            Resource:
+              Fn::GetAtt: [handler2, Arn]
+            End: true
