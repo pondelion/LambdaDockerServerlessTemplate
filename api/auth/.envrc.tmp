@@ -1,0 +1,5 @@
+export ENV1=env1
+export ENV2=2
+export IMAGE_URL==***********.dkr.ecr.ap-northeast-1.amazonaws.com/**********:latest
+export RESISTORY_ID=***********
+export COGNITO_USER_POOL_ARN=arn:aws:cognito-idp:ap-northeast-1:**********:userpool/ap-northeast-1_********
